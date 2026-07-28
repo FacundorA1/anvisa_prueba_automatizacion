@@ -1,0 +1,80 @@
+name: Scraping ANVISA diario
+
+on:
+  # Permite ejecutarlo manualmente.
+  workflow_dispatch:
+
+  # Ejecución automática diaria.
+  schedule:
+    - cron: "0 9 * * *"
+      timezone: "America/Montevideo"
+
+permissions:
+  contents: read
+
+# Evita dos ejecuciones simultáneas.
+concurrency:
+  group: scraping-anvisa
+  cancel-in-progress: false
+
+jobs:
+  scraping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Descargar código del repositorio
+        uses: actions/checkout@v4
+
+      - name: Preparar carpeta de salida
+        run: |
+          mkdir -p output
+          chmod 777 output
+
+      - name: Construir imagen Docker
+        run: |
+          docker build \
+            --tag "anvisa-scraper:${GITHUB_SHA}" \
+            .
+
+      - name: Ejecutar scraper
+        shell: bash
+        run: |
+          set -o pipefail
+
+          docker run --rm \
+            --name anvisa-scraper \
+            --shm-size=2g \
+            -e HEADLESS=true \
+            -e OUTPUT_DIR=/app/output \
+            -e TZ=America/Montevideo \
+            -v "${GITHUB_WORKSPACE}/output:/app/output" \
+            "anvisa-scraper:${GITHUB_SHA}" \
+            2>&1 | tee output/ejecucion.log
+
+      - name: Mostrar archivos generados
+        if: always()
+        run: |
+          echo "Archivos encontrados:"
+          ls -lah output || true
+
+      - name: Validar generación del CSV
+        run: |
+          if [ -z "$(find output -maxdepth 1 -type f -name '*.csv' -print -quit)" ]; then
+            echo "ERROR: no se generó ningún archivo CSV."
+            exit 1
+          fi
+
+          echo "CSV generado correctamente."
+
+      - name: Guardar resultados
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: anvisa-output-${{ github.run_number }}
+          path: |
+            output/*.csv
+            output/*.log
+            output/*.png
+          if-no-files-found: warn
+          retention-days: 30
