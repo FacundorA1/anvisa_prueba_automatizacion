@@ -1,0 +1,14 @@
+services:
+  scraper:
+    build:
+      context: .
+    image: anvisa-scraper:local
+
+    environment:
+      OUTPUT_DIR: /app/output
+      TZ: America/Montevideo
+
+    volumes:
+      - ./output:/app/output
+
+    shm_size: "2gb"

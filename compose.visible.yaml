@@ -1,0 +1,24 @@
+services:
+  chrome:
+    image: selenium/standalone-chrome:4.46.0-20260707
+    shm_size: "2gb"
+    ports:
+      - "4444:4444"
+      - "7900:7900"
+    environment:
+      SE_VNC_NO_PASSWORD: "1"
+
+  scraper:
+    build:
+      context: .
+    image: selenium-scraper:local
+    depends_on:
+      - chrome
+    environment:
+      SCRAPE_URL: ${SCRAPE_URL:-https://example.com}
+      HEADLESS: "false"
+      OUTPUT_DIR: /app/output
+      SELENIUM_REMOTE_URL: http://chrome:4444/wd/hub
+      MANUAL_WAIT_SECONDS: ${MANUAL_WAIT_SECONDS:-300}
+    volumes:
+      - ./output:/app/output

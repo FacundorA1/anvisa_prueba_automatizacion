@@ -1,0 +1,24 @@
+# Credenciales
+.env
+*.env
+cookies.json
+cookies*.json
+
+# Resultados locales
+output/
+*.log
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# Editores
+.vscode/
+.idea/
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
