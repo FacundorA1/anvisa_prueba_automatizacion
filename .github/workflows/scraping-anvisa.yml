@@ -6,7 +6,7 @@ on:
 
   # Ejecución automática diaria.
   schedule:
-    - cron: "0 10 * * *"
+    - cron: "30 10 * * *"
       timezone: "America/Montevideo"
 
 permissions:
