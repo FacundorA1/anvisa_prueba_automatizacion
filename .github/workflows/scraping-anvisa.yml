@@ -2,7 +2,7 @@ name: Scraping ANVISA diario
 
 on:
   # Permite ejecutarlo manualmente.
-  workflow_dispatch:
+  #workflow_dispatch:
 
   # Ejecución automática diaria.
   schedule:
